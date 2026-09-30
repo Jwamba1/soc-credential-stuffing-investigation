@@ -1,0 +1,17 @@
+Short description: Credential stuffing attack: 20 accounts compromised on MAIL-SERVER01
+Work note 1: Detection & Analysis
+Detected via KQL hunting in AuthenticationEvents (ADX). Two external IPs, 88.150.11.111 and 149.124.195.189, each made exactly one login attempt per account across multiple users, targeting MAIL-SERVER01 between 2022-01-04 and 2022-01-11. Password hashes differed on every attempt, and user agents were randomized and outdated, which indicates an automated tool. Initial hypothesis of password spraying revised to credential stuffing. Hunted all external IPs by accounts touched, including successful-only activity. Confirmed only these two IPs exhibited multi-account behavior; all other external IPs touched a single account. Possible phishing vector investigated: the Email table contained mislabeled authentication data, not message records, so phishing could not be confirmed. Verdict: TRUE POSITIVE.
+
+Work note 2: Scope
+20 accounts compromised (36 attempts, 20 successful, a 56% success rate, suggesting fresh, accurate stolen credentials).
+Via 88.150.11.111 (11): mainks, lolarish, wijones, lodegregorio, gemanzanares, dopoorman, josmith, shmcginnis, kipaoletti, brharris, masullivan.
+Via 149.124.195.189 (9): jumiller, laharley, degregory, caschneider, jopatterson, antipton, vafranklin, mikelly, kaosburn.
+Affected asset: MAIL-SERVER01. Internal 192.168.x.x failures and single-account external IPs assessed as benign.
+
+Work note 3: Containment & Recommendations
+Immediate: Block both IPs at the firewall. Force password resets and revoke active sessions for all 20 accounts. Review mailbox rules and forwarding on affected accounts.
+Follow-up: Check whether the credentials appear in known breach data.
+Prevention: Enforce MFA on mail access. Add a detection rule alerting when a single external IP attempts logins to more than 5 distinct accounts within 24 hours.
+
+Resolution notes
+Credential stuffing attack from two external IPs compromised 20 accounts on MAIL-SERVER01 between 2022-01-04 and 2022-01-11. Attacker IPs blocked, credentials reset, sessions revoked. MFA enforcement and a new detection rule recommended. Root cause: reused or previously breached credentials without MFA protection.

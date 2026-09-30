@@ -1,0 +1,38 @@
+AuthenticationEvents
+| where result == "Failed Login"
+| summarize Failures = count(), UsersTargeted = dcount(username) by src_ip
+| top 10 by Failures
+
+AuthenticationEvents
+| where src_ip in ("88.150.11.111", "149.124.195.189")
+| project timestamp, src_ip, username, result, hostname, user_agent, password_hash
+| sort by timestamp asc
+
+AuthenticationEvents
+| where src_ip in ("88.150.11.111", "149.124.195.189")
+| where result == "Successful Login"
+| summarize FirstCompromise = min(timestamp), Logins = count() by username, src_ip
+| sort by FirstCompromise asc
+
+Email
+| take 10
+
+Email | getschema 
+
+Email
+| where recipient has_any ("mainks", "jumiller", "laharley", "lolarish", "degregory", "caschneider", "jopatterson", "antipton", "vafranklin", "wijones", "lodegregorio", "gemanzanares", "dopoorman")
+| project event_time, sender, reply_to, recipient, subject, accepted, link
+| sort by event_time asc
+
+Email
+| project event_time, sender, recipient, subject
+| take 5
+
+Email
+| where subject has_any ("mainks", "jumiller", "laharley", "lolarish", "degregory", "caschneider", "jopatterson", "antipton", "vafranklin", "wijones", "lodegregorio", "gemanzanares", "dopoorman")
+| sort by event_time asc
+
+AuthenticationEvents
+| where not(src_ip startswith "192.168.")
+| summarize Attempts = count(), UsersTargeted = dcount(username), Successes = countif(result == "Successful Login") by src_ip
+| top 10 by UsersTargeted
